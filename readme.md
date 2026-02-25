@@ -27,7 +27,7 @@ Thiết kế tập trung vào hướng "Read-heavy" và nguyên tắc dữ liệ
 - `CartModule`: Quản lý logic thêm/bớt/xóa sản phẩm khỏi giỏ hàng.
 - `OrderModule`: Xử lý thanh toán và chốt đơn, đóng vai trò đảm bảo giao dịch nguyên vẹn khi vừa tạo đơn vừa tính toán bớt lượng tồn kho của sản phẩm (MongoDB Transactions).
 
-## 🗺 Lộ Trình Triển Khai (Roadmap)
+## Lộ Trình Triển Khai (Roadmap)
 - **Giai đoạn 1 (Foundation & Auth):** Khởi tạo source code, config môi trường, kết nối DB và hoàn thiện Auth (Đăng nhập/Đăng ký).
 - **Giai đoạn 2 (Catalog Management):** API quản lý hiển thị, thêm, sửa, xoá Danh mục và Sản phẩm.
 - **Giai đoạn 3 (Cart & Checkout):** API quản lý Giỏ hàng và luồng đặt hàng (Checkout).
