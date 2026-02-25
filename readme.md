@@ -2,14 +2,14 @@
 
 Hệ thống Backend cho ứng dụng Thương mại điện tử (E-commerce) được xây dựng dựa trên kiến trúc Modular với NestJS, tối ưu hóa cho hiệu suất và khả năng mở rộng thông qua MongoDB Atlas.
 
-## 🚀 Công Nghệ Sử Dụng (Tech Stack)
+## Công Nghệ Sử Dụng (Tech Stack)
 - **Framework Core:** [NestJS](https://nestjs.com/) (Node.js)
 - **Cơ sở dữ liệu:** [MongoDB Atlas](https://www.mongodb.com/cloud/atlas) thông qua [Mongoose](https://mongoosejs.com/)
 - **Caching & Queue (Mở rộng):** Redis / BullMQ
 - **Lưu trữ Media:** AWS S3 / Cloudinary
 - **Ngôn ngữ triển khai:** TypeScript
 
-## 📂 Kiến Trúc Cơ Sở Dữ Liệu (Schema Design)
+## Kiến Trúc Cơ Sở Dữ Liệu (Schema Design)
 Thiết kế tập trung vào hướng "Read-heavy" và nguyên tắc dữ liệu nhất quán (ACID properties) sử dụng MongoDB Transactions cho các luồng quan trọng.
 
 ### Các Collections Chính
@@ -20,7 +20,7 @@ Thiết kế tập trung vào hướng "Read-heavy" và nguyên tắc dữ liệ
 - **Orders**: Quản lý lịch sử và trạng thái đơn hàng. Tách biệt thông tin snapshot của sản phẩm khi mua để tránh thay đổi lịch sử.
 - **Reviews**: Lịch sử đánh giá, bình luận của khách hàng về sản phẩm.
 
-## 📦 Phân Chia Tính Năng (Modules)
+## Phân Chia Tính Năng (Modules)
 - `AuthModule`: Xác thực người dùng, JWT Tokens, Guards bảo vệ Route.
 - `UserModule`: Quản lý tài khoản, profile và các thao tác CRUD cơ bản.
 - `ProductModule` & `CategoryModule`: Quản lý danh mục hàng hóa, tìm kiếm (Full-text search), lọc kết quả và phân trang.
@@ -33,7 +33,7 @@ Thiết kế tập trung vào hướng "Read-heavy" và nguyên tắc dữ liệ
 - **Giai đoạn 3 (Cart & Checkout):** API quản lý Giỏ hàng và luồng đặt hàng (Checkout).
 - **Giai đoạn 4 (Payment & Optimization):** Tích hợp thanh toán online, Redis Caching, và tạo tài liệu API với Swagger.
 
-## ⚙️ Hướng Dẫn Cài Đặt (Getting Started)
+## Hướng Dẫn Cài Đặt (Getting Started)
 *(Block này sẽ được cập nhật chi tiết sau khi dự án có các file thực tế)*
 
 ```bash
