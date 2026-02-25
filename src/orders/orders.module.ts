@@ -1,4 +1,10 @@
 import { Module } from '@nestjs/common';
+import { MongooseModule } from '@nestjs/mongoose';
+import { Order, OrderSchema } from './schemas/order.schema';
 
-@Module({})
-export class OrdersModule {}
+@Module({
+    imports: [MongooseModule.forFeature([{ name: Order.name, schema: OrderSchema }])],
+    controllers: [],
+    providers: [],
+})
+export class OrdersModule { }
