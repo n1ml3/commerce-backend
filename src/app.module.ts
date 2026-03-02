@@ -11,6 +11,7 @@ import { CategoriesModule } from './categories/categories.module';
 import { CartsModule } from './carts/carts.module';
 import { OrdersModule } from './orders/orders.module';
 import { ReviewsModule } from './reviews/reviews.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { ReviewsModule } from './reviews/reviews.module';
     CartsModule,
     OrdersModule,
     ReviewsModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -57,6 +57,7 @@ async function bootstrap() {
     const userDocList: any[] = []; // to link carts, orders, reviews
     const saltRounds = 10;
     const defaultPasswordHash = await bcrypt.hash('password123', saltRounds);
+    const adminPasswordHash = await bcrypt.hash('admin123', saltRounds);
 
     for (let i = 0; i < 20; i++) {
         const numAddresses = faker.number.int({ min: 1, max: 3 });
@@ -72,9 +73,9 @@ async function bootstrap() {
         }
 
         const userData = {
-            name: faker.person.fullName(),
-            email: faker.internet.email().toLowerCase(),
-            passwordHash: defaultPasswordHash,
+            name: i === 0 ? 'Admin Nam' : faker.person.fullName(),
+            email: i === 0 ? 'admin@gmail.com' : faker.internet.email().toLowerCase(),
+            passwordHash: i === 0 ? adminPasswordHash : defaultPasswordHash,
             role: i === 0 ? UserRole.ADMIN : UserRole.USER, // proper enum
             phone: faker.phone.number(),
             addresses: addresses
