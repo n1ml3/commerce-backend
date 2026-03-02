@@ -9,7 +9,10 @@ export class ProductsService {
         @InjectModel(Product.name) private productModel: Model<ProductDocument>,
     ) { }
 
-    async findAll(): Promise<Product[]> {
+    async findAll(categoryId?: string): Promise<Product[]> {
+        if (categoryId) {
+            return this.productModel.find({ category: categoryId as any }).exec();
+        }
         return this.productModel.find().exec();
     }
 }
