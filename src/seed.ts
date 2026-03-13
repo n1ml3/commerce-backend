@@ -32,22 +32,32 @@ async function bootstrap() {
 
     console.log('Generating dummy data...');
 
+    console.log('--- Fetching data from DummyJSON ---');
+    const dummyJsonResponse = await fetch('https://dummyjson.com/products?limit=50');
+    const dummyJsonData = await dummyJsonResponse.json();
+    const dummyProducts = dummyJsonData.products;
+
     // 1. Seed Categories
     console.log('--- Seeding Categories ---');
+    const uniqueCategoryNames = [...new Set(dummyProducts.map((p: any) => p.category))] as string[];
     const categories: any[] = [];
     const categoryDocList: any[] = []; // to link products
-    for (let i = 0; i < 5; i++) {
-        const catName = faker.commerce.department();
+    const categoryDocMap = new Map<string, any>();
+
+    for (const catName of uniqueCategoryNames) {
         const catSlug = faker.helpers.slugify(catName).toLowerCase() + '-' + faker.string.alphanumeric(4);
-        const catData = {
-            name: catName,
+        categories.push({
+            name: catName.charAt(0).toUpperCase() + catName.slice(1).replace(/-/g, ' '),
             slug: catSlug,
-            description: faker.commerce.productDescription(),
-        };
-        categories.push(catData);
+            description: `All products in ${catName} category.`,
+        });
     }
     const insertedCategories = await categoryModel.insertMany(categories);
     categoryDocList.push(...insertedCategories);
+    
+    uniqueCategoryNames.forEach((catName, index) => {
+        categoryDocMap.set(catName, categoryDocList[index]);
+    });
     console.log(`Inserted ${categoryDocList.length} Categories.`);
 
 
@@ -72,13 +82,16 @@ async function bootstrap() {
             });
         }
 
+        const role = i === 0 ? UserRole.ADMIN : (i <= 5 ? UserRole.VENDOR : UserRole.USER);
         const userData = {
             name: i === 0 ? 'Admin Nam' : faker.person.fullName(),
-            email: i === 0 ? 'admin@gmail.com' : faker.internet.email().toLowerCase(),
+            email: i === 0 ? 'admin@gmail.com' : (i <= 5 ? `vendor${i}@gmail.com` : faker.internet.email().toLowerCase()),
             passwordHash: i === 0 ? adminPasswordHash : defaultPasswordHash,
-            role: i === 0 ? UserRole.ADMIN : UserRole.USER, // proper enum
+            role: role,
             phone: faker.phone.number(),
-            addresses: addresses
+            addresses: addresses,
+            shopName: role === UserRole.VENDOR ? `${faker.company.name()} Store` : undefined,
+            shopDescription: role === UserRole.VENDOR ? faker.company.catchPhrase() : undefined,
         };
         users.push(userData);
     }
@@ -91,33 +104,35 @@ async function bootstrap() {
     console.log('--- Seeding Products ---');
     const products: any[] = [];
     const productDocList: any[] = []; // to link carts, orders, reviews
-    for (let i = 0; i < 50; i++) {
-        const prodName = faker.commerce.productName();
+    const vendors = userDocList.filter(u => u.role === UserRole.VENDOR);
+
+    for (const dp of dummyProducts) {
+        const prodName = dp.title;
         const prodSlug = faker.helpers.slugify(prodName).toLowerCase() + '-' + faker.string.alphanumeric(6);
-        const originalPrice = parseFloat(faker.commerce.price({ min: 20, max: 1000 }));
-        const randomCategory = faker.helpers.arrayElement(categoryDocList);
+        const originalPrice = dp.price;
+        const finalPrice = dp.discountPercentage ? originalPrice * (1 - dp.discountPercentage / 100) : originalPrice;
+        
+        const catDoc = categoryDocMap.get(dp.category);
+        const randomVendor = faker.helpers.arrayElement(vendors);
 
-        const images: string[] = [];
-        for (let j = 0; j < faker.number.int({ min: 1, max: 4 }); j++) {
-            images.push(faker.image.urlPicsumPhotos());
-        }
-
-        // Add 1 or 2 attributes 
         const attrMap = new Map<string, string>();
-        if (faker.datatype.boolean()) attrMap.set('Color', faker.color.human());
-        if (faker.datatype.boolean()) attrMap.set('Material', faker.commerce.productMaterial());
+        if (dp.brand) attrMap.set('Brand', dp.brand);
+        if (dp.weight) attrMap.set('Weight', dp.weight.toString());
 
         const prodData = {
             name: prodName,
             slug: prodSlug,
-            description: faker.commerce.productDescription(),
+            description: dp.description,
             originalPrice: originalPrice,
-            finalPrice: originalPrice * (faker.number.float({ min: 0.8, max: 1.0 })), // 0 - 20% discount
-            stockQuantity: faker.number.int({ min: 0, max: 500 }),
-            category: randomCategory._id,
-            images: images,
+            finalPrice: parseFloat(finalPrice.toFixed(2)),
+            stockQuantity: dp.stock || faker.number.int({ min: 10, max: 100 }),
+            category: catDoc ? catDoc._id : categoryDocList[0]._id,
+            vendor: randomVendor._id,
+            likes: [],
+            dislikes: [],
+            images: dp.images && dp.images.length > 0 ? dp.images : (dp.thumbnail ? [dp.thumbnail] : []),
             attributes: Object.fromEntries(attrMap),
-            averageRating: 0 // Will be updated by reviews later theoretically, but we set 0 for now
+            averageRating: dp.rating || 0
         };
         products.push(prodData);
     }

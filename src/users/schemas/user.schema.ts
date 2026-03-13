@@ -4,6 +4,7 @@ import { Document } from 'mongoose';
 export enum UserRole {
   USER = 'user',
   ADMIN = 'admin',
+  VENDOR = 'vendor',
 }
 
 @Schema()
@@ -45,6 +46,12 @@ export class User {
 
   @Prop({ type: [Address], default: [] })
   addresses: Address[];
+
+  @Prop()
+  shopName?: string;
+
+  @Prop()
+  shopDescription?: string;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

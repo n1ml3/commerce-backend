@@ -65,4 +65,12 @@ export class CartsService {
         );
         return this.getCart(userId);
     }
+
+    async clearCart(userId: string): Promise<Cart> {
+        await this.cartModel.updateOne(
+            { user: userId as any },
+            { $set: { items: [] } }
+        );
+        return this.getCart(userId);
+    }
 }

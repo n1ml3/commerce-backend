@@ -1,6 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
 import { Category } from '../../categories/schemas/category.schema';
+import { User } from '../../users/schemas/user.schema';
 
 export type ProductDocument = Product & Document;
 
@@ -26,6 +27,15 @@ export class Product {
 
     @Prop({ type: Types.ObjectId, ref: 'Category', required: true })
     category: Category;
+
+    @Prop({ type: Types.ObjectId, ref: 'User', required: true })
+    vendor: User;
+
+    @Prop({ type: [{ type: Types.ObjectId, ref: 'User' }], default: [] })
+    likes: User[];
+
+    @Prop({ type: [{ type: Types.ObjectId, ref: 'User' }], default: [] })
+    dislikes: User[];
 
     @Prop({ type: [String], default: [] })
     images: string[];
