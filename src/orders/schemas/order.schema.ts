@@ -20,7 +20,7 @@ export enum OrderStatus {
 @Schema()
 export class OrderItem {
     @Prop({ type: Types.ObjectId, ref: 'Product', required: true })
-    product: Product;
+    product: Product | Types.ObjectId | string;
 
     @Prop({ required: true })
     name: string; // Snapshot name at the time of order
@@ -37,7 +37,7 @@ export type OrderDocument = Order & Document;
 @Schema({ timestamps: true })
 export class Order {
     @Prop({ type: Types.ObjectId, ref: 'User', required: true })
-    user: User;
+    user: User | Types.ObjectId | string;
 
     @Prop({ type: Address, required: true })
     shippingAddress: Address; // Snapshot of the shipping address

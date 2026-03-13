@@ -10,8 +10,9 @@ export class ProductsController {
     async findAll(
         @Query('category') categoryId?: string,
         @Query('vendor') vendorId?: string,
+        @Query('search') search?: string,
     ) {
-        return this.productsService.findAll(categoryId, vendorId);
+        return this.productsService.findAll(categoryId, vendorId, search);
     }
 
     @Get(':id')

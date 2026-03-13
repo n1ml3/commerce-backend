@@ -10,10 +10,16 @@ export class ProductsService {
         @InjectModel(Product.name) private productModel: Model<ProductDocument>,
     ) { }
 
-    async findAll(categoryId?: string, vendorId?: string): Promise<Product[]> {
+    async findAll(categoryId?: string, vendorId?: string, search?: string): Promise<Product[]> {
         const query: any = {};
         if (categoryId) query.category = new Types.ObjectId(categoryId);
         if (vendorId) query.vendor = new Types.ObjectId(vendorId);
+        if (search) {
+            query.$or = [
+                { name: { $regex: search, $options: 'i' } },
+                { description: { $regex: search, $options: 'i' } }
+            ];
+        }
         return this.productModel.find(query).exec();
     }
 

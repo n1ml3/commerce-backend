@@ -19,11 +19,12 @@ export class OrdersService {
 
         let totalAmount = 0;
         const orderItems = cart.items.map(item => {
-            const price = item.price || item.product.originalPrice;
+            const productDoc = item.product as any;
+            const price = item.price || productDoc.originalPrice;
             totalAmount += price * item.quantity;
             return {
-                product: item.product._id,
-                name: item.product.name,
+                product: productDoc._id,
+                name: productDoc.name,
                 price: price,
                 quantity: item.quantity,
             };

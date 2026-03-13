@@ -15,6 +15,8 @@ export class CartsService {
         let cart = await this.cartModel.findOne({ user: userId as any }).populate('items.product').exec();
         if (!cart) {
             cart = await this.cartModel.create({ user: userId as any, items: [] });
+        } else {
+            cart.items = cart.items.filter(item => item.product != null);
         }
         return cart;
     }
@@ -32,12 +34,12 @@ export class CartsService {
         const price = product.finalPrice || product.originalPrice;
 
         // Check if item already in cart
-        const existingItemIndex = cart.items.findIndex(item => item.product.toString() === productId);
+        const existingItemIndex = cart.items.findIndex(item => item.product?.toString() === productId);
         if (existingItemIndex > -1) {
             cart.items[existingItemIndex].quantity += quantity;
         } else {
             cart.items.push({
-                product: product as any,
+                product: product._id as any,
                 quantity,
                 price
             });

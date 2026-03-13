@@ -33,9 +33,13 @@ async function bootstrap() {
     console.log('Generating dummy data...');
 
     console.log('--- Fetching data from DummyJSON ---');
-    const dummyJsonResponse = await fetch('https://dummyjson.com/products?limit=50');
-    const dummyJsonData = await dummyJsonResponse.json();
-    const dummyProducts = dummyJsonData.products;
+    const categoriesToFetch = ['smartphones', 'laptops', 'tablets', 'mobile-accessories'];
+    let dummyProducts: any[] = [];
+    for (const cat of categoriesToFetch) {
+        const dummyJsonResponse = await fetch(`https://dummyjson.com/products/category/${cat}`);
+        const dummyJsonData = await dummyJsonResponse.json();
+        dummyProducts.push(...dummyJsonData.products);
+    }
 
     // 1. Seed Categories
     console.log('--- Seeding Categories ---');
@@ -82,19 +86,32 @@ async function bootstrap() {
             });
         }
 
-        const role = i === 0 ? UserRole.ADMIN : (i <= 5 ? UserRole.VENDOR : UserRole.USER);
+        const role = i === 0 ? UserRole.ADMIN : UserRole.USER;
         const userData = {
             name: i === 0 ? 'Admin Nam' : faker.person.fullName(),
-            email: i === 0 ? 'admin@gmail.com' : (i <= 5 ? `vendor${i}@gmail.com` : faker.internet.email().toLowerCase()),
+            email: i === 0 ? 'admin@gmail.com' : faker.internet.email().toLowerCase(),
             passwordHash: i === 0 ? adminPasswordHash : defaultPasswordHash,
             role: role,
             phone: faker.phone.number(),
             addresses: addresses,
-            shopName: role === UserRole.VENDOR ? `${faker.company.name()} Store` : undefined,
-            shopDescription: role === UserRole.VENDOR ? faker.company.catchPhrase() : undefined,
         };
         users.push(userData);
     }
+    
+    // Add vendors dynamically based on incoming brands
+    const uniqueBrands = Array.from(new Set(dummyProducts.map((p: any) => p.brand).filter(Boolean)));
+    uniqueBrands.forEach((brand, idx) => {
+         users.push({
+            name: `${brand} Official`,
+            email: `vendor${idx}@${brand?.toString().replace(/\s/g, '').toLowerCase()}.com`,
+            passwordHash: defaultPasswordHash,
+            role: UserRole.VENDOR,
+            phone: faker.phone.number(),
+            addresses: [],
+            shopName: `${brand} Store`,
+            shopDescription: `Cửa hàng chính hãng phân phối các sản phẩm của ${brand}.`
+         });
+    });
     const insertedUsers = await userModel.insertMany(users);
     userDocList.push(...insertedUsers);
     console.log(`Inserted ${userDocList.length} Users.`);
@@ -109,15 +126,29 @@ async function bootstrap() {
     for (const dp of dummyProducts) {
         const prodName = dp.title;
         const prodSlug = faker.helpers.slugify(prodName).toLowerCase() + '-' + faker.string.alphanumeric(6);
-        const originalPrice = dp.price;
-        const finalPrice = dp.discountPercentage ? originalPrice * (1 - dp.discountPercentage / 100) : originalPrice;
+        const originalPriceUsd = dp.price;
+        const finalPriceUsd = dp.discountPercentage ? originalPriceUsd * (1 - dp.discountPercentage / 100) : originalPriceUsd;
+        
+        // Convert to VND
+        const originalPrice = Math.round((originalPriceUsd * 25000) / 1000) * 1000;
+        const finalPrice = Math.round((finalPriceUsd * 25000) / 1000) * 1000;
         
         const catDoc = categoryDocMap.get(dp.category);
-        const randomVendor = faker.helpers.arrayElement(vendors);
+        
+        // Find matching vendor by brand
+        let productVendor = vendors.find(v => v.shopName === `${dp.brand} Store`);
+        if (!productVendor) {
+           productVendor = faker.helpers.arrayElement(vendors); // fallback
+        }
 
         const attrMap = new Map<string, string>();
         if (dp.brand) attrMap.set('Brand', dp.brand);
         if (dp.weight) attrMap.set('Weight', dp.weight.toString());
+
+        let matchedVendor = vendors.find(v => v.shopName === `${dp.brand} Store`);
+        if (!matchedVendor) {
+            matchedVendor = faker.helpers.arrayElement(vendors);
+        }
 
         const prodData = {
             name: prodName,
@@ -127,7 +158,7 @@ async function bootstrap() {
             finalPrice: parseFloat(finalPrice.toFixed(2)),
             stockQuantity: dp.stock || faker.number.int({ min: 10, max: 100 }),
             category: catDoc ? catDoc._id : categoryDocList[0]._id,
-            vendor: randomVendor._id,
+            vendor: matchedVendor._id,
             likes: [],
             dislikes: [],
             images: dp.images && dp.images.length > 0 ? dp.images : (dp.thumbnail ? [dp.thumbnail] : []),

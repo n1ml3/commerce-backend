@@ -1,8 +1,8 @@
 import { Controller, Get, Post, Delete, Put, Param, Body, UseGuards, Request } from '@nestjs/common';
 import { CartsService } from './carts.service';
-import { AuthGuard } from '@nestjs/passport';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
-@UseGuards(AuthGuard('jwt'))
+@UseGuards(JwtAuthGuard)
 @Controller('carts')
 export class CartsController {
     constructor(private readonly cartsService: CartsService) { }
@@ -14,7 +14,7 @@ export class CartsController {
 
     @Post('items')
     async addItem(@Request() req, @Body() body: { productId: string; quantity: number }) {
-        return this.cartsService.addItem(req.user.sub, body.productId, body.quantity || 1);
+        try { return await this.cartsService.addItem(req.user.sub, body.productId, body.quantity || 1); } catch (e) { return { error: e.message, stack: e.stack }; }
     }
 
     @Delete('items/:productId')
