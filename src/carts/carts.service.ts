@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Cart, CartDocument } from './schemas/cart.schema';
@@ -35,8 +35,18 @@ export class CartsService {
 
         // Check if item already in cart
         const existingItemIndex = cart.items.findIndex(item => item.product?.toString() === productId);
+        let requestedQuantity = quantity;
+        
         if (existingItemIndex > -1) {
-            cart.items[existingItemIndex].quantity += quantity;
+            requestedQuantity += cart.items[existingItemIndex].quantity;
+        }
+
+        if (product.stockQuantity < requestedQuantity) {
+            throw new BadRequestException(`Chỉ còn ${product.stockQuantity} sản phẩm trong kho`);
+        }
+
+        if (existingItemIndex > -1) {
+            cart.items[existingItemIndex].quantity = requestedQuantity;
         } else {
             cart.items.push({
                 product: product._id as any,
@@ -50,21 +60,34 @@ export class CartsService {
     }
 
     async removeItem(userId: string, productId: string): Promise<Cart> {
-        await this.cartModel.updateOne(
-            { user: userId as any },
-            { $pull: { items: { product: productId as any } } }
-        );
+        const cart = await this.cartModel.findOne({ user: userId as any });
+        if (cart) {
+            cart.items = cart.items.filter(item => item.product?.toString() !== productId);
+            await cart.save();
+        }
         return this.getCart(userId);
     }
 
     async updateItemQuantity(userId: string, productId: string, quantity: number): Promise<Cart> {
-        await this.cartModel.updateOne(
-            {
-                user: userId as any,
-                'items.product': productId as any
-            },
-            { $set: { 'items.$.quantity': quantity } }
-        );
+        if (quantity <= 0) {
+            return this.removeItem(userId, productId);
+        }
+
+        const product = await this.productModel.findById(productId);
+        if (!product) throw new NotFoundException('Product not found');
+
+        if (product.stockQuantity < quantity) {
+            throw new BadRequestException(`Chỉ còn ${product.stockQuantity} sản phẩm trong kho`);
+        }
+
+        const cart = await this.cartModel.findOne({ user: userId as any });
+        if (cart) {
+            const itemIndex = cart.items.findIndex(i => i.product?.toString() === productId);
+            if (itemIndex > -1) {
+                cart.items[itemIndex].quantity = quantity;
+                await cart.save();
+            }
+        }
         return this.getCart(userId);
     }
 

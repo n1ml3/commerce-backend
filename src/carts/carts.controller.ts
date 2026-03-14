@@ -14,7 +14,7 @@ export class CartsController {
 
     @Post('items')
     async addItem(@Request() req, @Body() body: { productId: string; quantity: number }) {
-        try { return await this.cartsService.addItem(req.user.sub, body.productId, body.quantity || 1); } catch (e) { return { error: e.message, stack: e.stack }; }
+        return await this.cartsService.addItem(req.user.sub, body.productId, body.quantity || 1);
     }
 
     @Delete('items/:productId')

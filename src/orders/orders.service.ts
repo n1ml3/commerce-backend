@@ -32,7 +32,7 @@ export class OrdersService {
 
         const newOrder = await this.orderModel.create({
             user: userId,
-            shippingAddress: shippingAddress || { street: 'Default St', city: 'City', country: 'Country', postalCode: '00000' },
+            shippingAddress: shippingAddress || { street: 'Default St', city: 'City', state: 'State', country: 'Country', zipCode: '00000' },
             items: orderItems,
             totalAmount,
             paymentMethod: paymentMethod || 'COD',
