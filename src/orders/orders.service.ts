@@ -8,6 +8,7 @@ import { CartsService } from '../carts/carts.service';
 export class OrdersService {
     constructor(
         @InjectModel(Order.name) private orderModel: Model<OrderDocument>,
+        @InjectModel('Product') private productModel: Model<any>,
         private cartsService: CartsService,
     ) { }
 
@@ -39,6 +40,14 @@ export class OrdersService {
             paymentStatus: PaymentStatus.PENDING,
             orderStatus: OrderStatus.PENDING,
         });
+
+        // Deduct stock for each product
+        for (const item of orderItems) {
+            await this.productModel.findByIdAndUpdate(
+                item.product,
+                { $inc: { stockQuantity: -item.quantity } }
+            );
+        }
 
         await this.cartsService.clearCart(userId);
 
