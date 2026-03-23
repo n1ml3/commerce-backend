@@ -16,4 +16,9 @@ export class OrdersController {
     async getMyOrders(@Request() req) {
         return this.ordersService.getUserOrders(req.user.sub);
     }
+
+    @Get('all')
+    async getAllOrders() {
+        return this.ordersService.getAllOrders();
+    }
 }
