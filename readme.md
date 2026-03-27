@@ -46,6 +46,3 @@ API được xây dựng dựa trên các nguyên tắc RESTful. Hầu hết cá
 - `/orders`: Đặt hàng (checkout) và quản lý trạng thái các đơn hàng.
 - `/reviews`: Tạo và xem các đánh giá sản phẩm.
 - `/categories`: Xem danh sách danh mục các mặt hàng.
-
-## Giấy phép
-MIT
