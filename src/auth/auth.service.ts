@@ -3,6 +3,7 @@ import { JwtService } from '@nestjs/jwt';
 import { UsersService } from '../users/users.service';
 import * as bcrypt from 'bcrypt';
 import { UserRole } from '../users/schemas/user.schema';
+import { RegisterDto } from './dto/register.dto';
 
 @Injectable()
 export class AuthService {
@@ -35,7 +36,7 @@ export class AuthService {
         };
     }
 
-    async register(registerDto: any) {
+    async register(registerDto: RegisterDto) {
         const existingUser = await this.usersService.findOneByEmail(registerDto.email);
         if (existingUser) {
             throw new ConflictException('Email đã tồn tại');
